@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Registration Form Validation</title>
+<link rel="stylesheet" href="styles1.css" />
+</head>
+<body>
+<h2>Registration Form</h2>
+<form id="registrationForm" novalidate>
+  <div>
+    <label for="firstName">First Name</label><br />
+    <input type="text" id="firstName" name="firstName" placeholder="Enter First Name" required minlength="6" pattern="[A-Za-z]+" aria-describedby="firstNameHelp" /><br />
+    <div id="firstNameError" style="color:red;"></div>
+  </div>
+  <div>
+    <label for="lastName">Last Name</label><br />
+    <input type="text" id="lastName" name="lastName" placeholder="Enter Last Name" required aria-describedby="lastNameHelp" /><br />
+    <div id="lastNameError" style="color:red;"></div>
+  </div>
+  <div>
+    <label for="password">Password</label><br />
+    <input type="password" id="password" name="password" placeholder="Enter Your Password" required aria-describedby="passwordHelp" /><br />
+    <div id="passwordError" style="color:red;"></div>
+  </div>
+  <div>
+    <label for="email">Email</label><br />
+    <input type="email" id="email" name="email" placeholder="Enter Your Email id" required pattern="^[\w.-]+@aiktc\.ac\.in$" aria-describedby="emailHelp" /><br />
+    <div id="emailError" style="color:red;"></div>
+  </div>
+  <div>
+    <label for="mobile">Mobile No.</label><br />
+    <input id="mobile" name="mobile" type="tel" placeholder="Enter Your Mobile No." maxlength="10" pattern="^\d{10}$" required aria-describedby="mobileHelp" inputmode="numeric" /><br />
+    <div id="mobileError" style="color:red;"></div>
+  </div>
+  <div>
+    <label for="address">Address</label><br />
+    <textarea id="address" name="address" placeholder="Enter Your Address" rows="3" required aria-describedby="addressHelp"></textarea><br />
+    <div id="addressError" style="color:red;"></div>
+  </div>
+  <input type="submit" value="Register" />
+</form>
+
+<div id="output" role="region" aria-live="polite" style="margin-top:20px; border:1px solid #ccc; padding:10px;"></div>
+
+<script>
+(() => {
+  const form = document.getElementById('registrationForm'),
+        output = document.getElementById('output'),
+        errorIds = ['firstNameError','lastNameError','passwordError','emailError','mobileError','addressError'];
+
+  const escapeHTML = str => str.replace(/[&<>"'`=\/]/g, s => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#x60;','=':'&#x3D;','/':'&#x2F;'
+  })[s]);
+
+  const validatePassword = pwd => {
+    if(pwd.length < 8) return "Password must be at least 8 characters long.";
+    if(!/(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/.test(pwd)) return "Password must contain letters, numbers, and special characters.";
+    return "";
+  };
+
+  const setError = (id,msg) => document.getElementById(id).textContent = msg;
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    errorIds.forEach(id => setError(id,''));
+    output.textContent = '';
+
+    const firstName = form.firstName.value.trim(),
+          lastName = form.lastName.value.trim(),
+          password = form.password.value,
+          email = form.email.value.trim(),
+          mobile = form.mobile.value.trim(),
+          address = form.address.value.trim();
+
+    let valid = true;
+    if(firstName.length < 6 || !/^[A-Za-z]+$/.test(firstName)) {
+      setError('firstNameError',"First name must be at least 6 letters and contain only alphabets.");
+      valid = false;
+    }
+    if(!lastName.length) {
+      setError('lastNameError',"Last name cannot be empty.");
+      valid = false;
+    }
+    let pwdErr = validatePassword(password);
+    if(pwdErr) {
+      setError('passwordError', pwdErr);
+      valid = false;
+    }
+    if(!/^[\w.-]+@aiktc\.ac\.in$/.test(email)) {
+      setError('emailError',"Email must end with @aiktc.ac.in");
+      valid = false;
+    }
+    if(!/^\d{10}$/.test(mobile)) {
+      setError('mobileError',"Mobile number must be exactly 10 digits.");
+      valid = false;
+    }
+    if(!address.length) {
+      setError('addressError',"Address cannot be empty.");
+      valid = false;
+    }
+    if(!valid) return;
+
+    output.innerHTML = `
+      <h3>Submitted Details</h3>
+      <p><strong>First Name:</strong> ${escapeHTML(firstName)}</p>
+      <p><strong>Last Name:</strong> ${escapeHTML(lastName)}</p>
+      <p><strong>Email:</strong> ${escapeHTML(email)}</p>
+      <p><strong>Mobile:</strong> ${escapeHTML(mobile)}</p>
+      <p><strong>Address:</strong> ${escapeHTML(address)}</p>
+    `;
+    form.reset();
+  });
+
+  form.mobile.addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '').slice(0,10);
+  });
+})();
+</script>
+</body>
+</html>
